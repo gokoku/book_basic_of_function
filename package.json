@@ -1,0 +1,11 @@
+{
+  "name": "7_2",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "expect.js": "",
+    "mocha": ""
+  },
+  "author": "",
+  "license": "ISC"
+}

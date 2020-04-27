@@ -1,0 +1,9 @@
+{
+  "name": "7_2",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node ../../node_modules/mocha/bin/mocha"
+  },
+  "author": "",
+  "license": "ISC"
+}
