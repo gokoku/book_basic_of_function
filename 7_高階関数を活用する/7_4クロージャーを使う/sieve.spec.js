@@ -112,8 +112,8 @@ const stream = {
     }
   },
   /* head:: STREAM[T] => T */
-  head: (aStream) => {
-    return stream.match(aStream, {
+  head: (lazyList) => {
+    return stream.match(lazyList, {
       empty: () => {
         return null
       },
@@ -123,8 +123,8 @@ const stream = {
     })
   },
   /* tail:: STREAM[T] => STREAM[T] */
-  tail: (aStream) => {
-    return stream.match(aStream, {
+  tail: (lazyList) => {
+    return stream.match(lazyList, {
       empty: () => {
         return null
       },
@@ -133,19 +133,50 @@ const stream = {
       },
     })
   },
-  take: (aStream, n) => {
-    return stream.match(aStream, {
+  isEmpty: (lazyList) => {
+    return stream.match(lazyList, {
       empty: () => {
-        return list.empty()
+        return true
       },
       cons: (head, tailThunk) => {
-        if (n === 0) {
-          return list.empty()
-        } else {
-          return list.cons(head, stream.take(tailThunk(), n - 1))
-        }
+        return false
       },
     })
+  },
+  toArray: (lazyList) => {
+    return stream.match(lazyList, {
+      empty: () => {
+        return []
+      },
+      cons: (head, tailThunk) => {
+        return stream.match(tailThunk(), {
+          empty: () => {
+            return [head]
+          },
+          cons: (head_, tailTHunk_) => {
+            return [head].concat(stream.toArray(tailThunk()))
+          },
+        })
+      },
+    })
+  },
+  take: (lazyList) => {
+    return (number) => {
+      return stream.match(lazyList, {
+        empty: () => {
+          return stream.empty()
+        },
+        cons: (head, tailThunk) => {
+          if (number === 0) {
+            return stream.empty()
+          } else {
+            return stream.cons(head, (_) => {
+              return stream.take(tailThunk())(number - 1)
+            })
+          }
+        },
+      })
+    }
   },
   /* filter:: FUN[T => BOOL] => STREAM[T] => STREAM[T] */
   filter: (predicate) => {
@@ -168,7 +199,6 @@ const stream = {
   },
   /* remove:: FUN[T => BOOL] => STREAM[T] => STREAM[T] */
   remove: (predicate) => {
-    console.log('**** remove')
     return (aStream) => {
       return stream.filter(not(predicate))(aStream)
     }
@@ -196,6 +226,8 @@ const enumFrom = (n) => {
   })
 }
 
+expect(stream.toArray(stream.take(enumFrom(0))(5))).to.eql([0, 1, 2, 3, 4])
+
 /* 無限の性数列を生成する */
 const integers = enumFrom(0)
 
@@ -214,10 +246,10 @@ const sieve = (aStream) => {
       return null
     },
     cons: (head, tailThunk) => {
-      return stream.cons(head, () => {
+      return stream.cons(head, (_) => {
         return sieve(
           stream.remove((item) => {
-            return multipleOf(item)(head)
+            return multipleOf(head)(item)
           })(tailThunk())
         )
       })
@@ -229,6 +261,19 @@ const sieve = (aStream) => {
 const primes = sieve(enumFrom(2))
 const primeGenerator = generate(primes)
 
-expect(primeGenerator()).to.eql(2)
-expect(primeGenerator()).to.eql(3)
-expect(primeGenerator()).to.eql(4)
+expect(stream.toArray(stream.take(primes)(10))).to.eql([
+  2,
+  3,
+  5,
+  7,
+  11,
+  13,
+  17,
+  19,
+  23,
+  29,
+])
+
+//expect(primeGenerator()).to.eql(2)
+//expect(primeGenerator()).to.eql(3)
+//expect(primeGenerator()).to.eql(5)
