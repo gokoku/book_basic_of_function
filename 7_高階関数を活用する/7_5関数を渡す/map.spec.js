@@ -108,4 +108,4 @@ const mapSquare = map((n) => {
   return n * n
 })
 
-expect(compose(list.toArray, mapSquare)(numbers)).to.eql([1, 4, 9])
+expect(compose(list.toArray, mapSquare)(number)).to.eql([1, 4, 9])
