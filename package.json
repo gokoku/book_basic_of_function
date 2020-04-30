@@ -4,7 +4,8 @@
   "description": "",
   "dependencies": {
     "expect.js": "",
-    "mocha": ""
+    "mocha": "",
+    "net": "^1.0.2"
   },
   "author": "",
   "license": "ISC"
